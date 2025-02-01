@@ -37,9 +37,12 @@ public final class Utils {
         return resultStringBuilder.toString();
     }
 
-    public static int findFreePort() throws PodmanException {
+    public static int findFreePort(List<Integer> binded) throws PodmanException {
         Integer result = null;
-        for (int port : IntStream.range(34400, 34500).toArray()) {
+        for (int port : IntStream.range(30000, 50000).toArray()) {
+            if (binded.contains(port)) {
+                continue;
+            }
             try (ServerSocket serverSocket = new ServerSocket(port)) {
                 if (serverSocket != null && serverSocket.getLocalPort() == port) {
                     result = port;

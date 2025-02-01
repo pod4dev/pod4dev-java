@@ -21,25 +21,25 @@ public class ServiceBinding {
     /**
      * Exposed port.
      */
-    private final int exposedPort;
+    private final Integer exposedPort;
 
     /**
      * Mapped port.
      */
-    private final int mappedPort;
+    private final Integer mappedPort;
 
     /**
      * Creates port binding.
      *
      * @param serviceName the name of service that owns by the given port.
-     * @param mappedHost the service's host.
+     * @param mappedHost  the service's host.
      * @param exposedPort the exposed port.
      * @param mappedPort  the mapped port.
      */
     public ServiceBinding(String serviceName,
                           String mappedHost,
-                          int exposedPort,
-                          int mappedPort) {
+                          Integer exposedPort,
+                          Integer mappedPort) {
         this.serviceName = serviceName;
         this.mappedHost = mappedHost;
         this.exposedPort = exposedPort;

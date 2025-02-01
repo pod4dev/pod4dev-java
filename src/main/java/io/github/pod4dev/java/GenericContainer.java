@@ -29,10 +29,18 @@ public interface GenericContainer extends AutoCloseable {
     /**
      * Do resources cleanup after stopping.
      *
-     * @param doCleanup default if true.
+     * @param doCleanup default is true.
      * @return customised container.
      */
     GenericContainer withCleanup(boolean doCleanup);
+
+    /**
+     * Do volumes cleanup after stopping.
+     *
+     * @param doRemoveVolumes default is true.
+     * @return customised container.
+     */
+    GenericContainer withRemoveVolumes(boolean doRemoveVolumes);
 
     /**
      * Getting mapped host for the given service's name and exposed port.

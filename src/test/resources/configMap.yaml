@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pod4dev-java-config
-data:
-  TEST_ENV: "test"

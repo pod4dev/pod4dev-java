@@ -12,15 +12,15 @@ import java.nio.file.Paths;
 class KubePlayerTest {
 
     protected static final KubePlayer ENVIRONMENT = new KubePlayer(
-        "/var/run/user/1000/podman/podman.sock",
-        Paths.get("src/test/resources/").toAbsolutePath().toString()
+            "/var/run/user/1000/podman/podman.sock",
+            Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString()
     );
 
-    protected static final String SERVICE = "nginx";
-    protected static final int PORT = 80;
-
     static {
-        ENVIRONMENT.withExposedService(SERVICE, PORT).start();
+        ENVIRONMENT
+                .withExposedService("test-1", 80)
+                .withExposedService("test-2", 81)
+                .start();
     }
 
     @Test
@@ -30,13 +30,22 @@ class KubePlayerTest {
 
         /*------ Actions ------*/
 
-        var mappedPort = ENVIRONMENT.getMappedPort(SERVICE, PORT);
-        var result = client
-            .newCall(new Request.Builder().url("http://localhost:%d".formatted(mappedPort)).build())
-            .execute();
+        var mappedPort1 = ENVIRONMENT.getMappedPort("test-1", 80);
+        var mappedHost1 = ENVIRONMENT.getMappedHost("test-1", 80);
+        var mappedPort2 = ENVIRONMENT.getMappedPort("test-2", 81);
+        var mappedHost2 = ENVIRONMENT.getMappedHost("test-2", 81);
+
+        var result1 = client
+                .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost1, mappedPort1)).build())
+                .execute();
+        var result2 = client
+                .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost2, mappedPort2)).build())
+                .execute();
 
         /*------ Asserts ------*/
-        Assertions.assertNotEquals(PORT, mappedPort);
-        Assertions.assertTrue(result.isSuccessful());
+        Assertions.assertNotEquals(80, mappedPort1);
+        Assertions.assertNotEquals(81, mappedPort2);
+        Assertions.assertTrue(result1.isSuccessful());
+        Assertions.assertTrue(result2.isSuccessful());
     }
 }

@@ -7,6 +7,7 @@ import io.github.pod4dev.libpodj.api.PodsApi;
 import io.github.pod4dev.libpodj.api.SystemApi;
 import io.github.pod4dev.libpodj.model.LibpodInfo;
 import io.github.pod4dev.libpodj.model.PlayKubeReport;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.unixdomainsockets.UnixDomainSocketFactory;
 
@@ -21,6 +22,7 @@ import java.util.function.Predicate;
 /**
  * Work with /kube/play API.
  */
+@Slf4j
 public class KubePlayer implements GenericContainer {
 
     private final ApiClient api;
@@ -30,6 +32,7 @@ public class KubePlayer implements GenericContainer {
     private final List<ServiceBinding> servicesBindings = new ArrayList<>();
 
     private boolean doCleanup = true;
+    private boolean doRemoveVolumes = true;
 
     /**
      * Creates player with specified path for k8s YAML specification. The socket path is autodetected via {@code PODMAN_SOCKET} environment
@@ -55,9 +58,8 @@ public class KubePlayer implements GenericContainer {
             throw new PodmanException("Environment variable " + Constants.ENV_PODMAN_SOCKET + " is not set");
         }
 
-        var socketFile = new File(socketPath);
         var httpClient = new OkHttpClient.Builder()
-                .socketFactory(new UnixDomainSocketFactory(socketFile))
+                .socketFactory(new UnixDomainSocketFactory(new File(socketPath)))
                 .build();
         this.api = new FixedApiClient()
                 .setHttpClient(httpClient)
@@ -74,8 +76,6 @@ public class KubePlayer implements GenericContainer {
             throw new PodmanException("Doesn't initialized", ex);
         }
         this.hostname = libpodInfo.getHost().getHostname();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     }
 
     @Override
@@ -88,7 +88,7 @@ public class KubePlayer implements GenericContainer {
             throw new PodmanException("Binging[serviceName=%s, exposedPort=%d] already exists".formatted(serviceName, exposedPort));
         }
 
-        final int mappedPort = Utils.findFreePort();
+        final int mappedPort = Utils.findFreePort(servicesBindings.stream().map(ServiceBinding::getMappedPort).toList());
 
         servicesBindings.add(new ServiceBinding(serviceName, this.hostname, exposedPort, mappedPort));
         return this;
@@ -101,7 +101,15 @@ public class KubePlayer implements GenericContainer {
     }
 
     @Override
+    public KubePlayer withRemoveVolumes(boolean doRemoveVolumes) {
+        this.doRemoveVolumes = doRemoveVolumes;
+        return this;
+    }
+
+    @Override
     public void start() throws PodmanException {
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+
         final var podsApi = new PodsApi(this.api);
 
         String yaml = null;
@@ -113,14 +121,14 @@ public class KubePlayer implements GenericContainer {
 
         PlayKubeReport report = null;
         try {
+            List<String> ports = servicesBindings.stream()
+                    .map(serviceBinding -> "%d:%d".formatted(
+                            serviceBinding.getMappedPort(),
+                            serviceBinding.getExposedPort()
+                    ))
+                    .toList();
             report = podsApi.playKubeLibpod_0()
-                    .contentType("text/plain")
-                    .publishPorts(servicesBindings.stream()
-                            .map(serviceBinding -> "%d:%d".formatted(
-                                    serviceBinding.getMappedPort(),
-                                    serviceBinding.getExposedPort()
-                            ))
-                            .toList())
+                    .publishPorts(ports)
                     .wait(this.doCleanup)
                     .start(true)
                     .request(yaml)
@@ -147,7 +155,7 @@ public class KubePlayer implements GenericContainer {
 
         try {
             pods.playKubeDownLibpod_0()
-                    .force(true)
+                    .force(this.doRemoveVolumes)
                     .request(yaml)
                     .execute();
         } catch (ApiException e) {

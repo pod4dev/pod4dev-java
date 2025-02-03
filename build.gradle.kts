@@ -23,7 +23,7 @@ dependencies {
 }
 
 group = "io.github.pod4dev"
-version = "0.3.2-1"
+version = "0.3.2-2"
 
 java {
     withJavadocJar()

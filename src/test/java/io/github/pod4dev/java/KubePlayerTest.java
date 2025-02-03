@@ -1,5 +1,6 @@
 package io.github.pod4dev.java;
 
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.junit.jupiter.api.Assertions;
@@ -8,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-
+@Slf4j
 class KubePlayerTest {
 
     protected static final KubePlayer ENVIRONMENT = new KubePlayer(
@@ -34,6 +35,10 @@ class KubePlayerTest {
         var mappedHost1 = ENVIRONMENT.getMappedHost("test-1", 80);
         var mappedPort2 = ENVIRONMENT.getMappedPort("test-2", 81);
         var mappedHost2 = ENVIRONMENT.getMappedHost("test-2", 81);
+
+        String logTemplate = "Mapped: %s:%d";
+        log.info(logTemplate.formatted(mappedHost1, mappedPort1));
+        log.info(logTemplate.formatted(mappedHost2, mappedPort2));
 
         var result1 = client
                 .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost1, mappedPort1)).build())

@@ -13,7 +13,6 @@ import java.nio.file.Paths;
 class KubePlayerTest {
 
     protected static final KubePlayer ENVIRONMENT = new KubePlayer(
-            "/var/run/user/1000/podman/podman.sock",
             Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString()
     );
 

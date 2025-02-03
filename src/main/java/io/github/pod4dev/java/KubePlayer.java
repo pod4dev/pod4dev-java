@@ -4,8 +4,6 @@ import io.github.pod4dev.java.exceptions.PodmanException;
 import io.github.pod4dev.libpodj.ApiClient;
 import io.github.pod4dev.libpodj.ApiException;
 import io.github.pod4dev.libpodj.api.PodsApi;
-import io.github.pod4dev.libpodj.api.SystemApi;
-import io.github.pod4dev.libpodj.model.LibpodInfo;
 import io.github.pod4dev.libpodj.model.PlayKubeReport;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -13,6 +11,7 @@ import okhttp3.unixdomainsockets.UnixDomainSocketFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,47 +34,41 @@ public class KubePlayer implements GenericContainer {
     private boolean doRemoveVolumes = true;
 
     /**
-     * Creates player with specified path for k8s YAML specification. The socket path is autodetected via {@code PODMAN_SOCKET} environment
+     * Creates player with specified paths for socket file and k8s YAML specification.
+     *
+     * @param podmanUri host address.
+     * @param yamlPath  path to k8s YAML specification.
+     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
+     */
+    private KubePlayer(URI podmanUri, String yamlPath) throws PodmanException {
+        var httpClientBuilder = new OkHttpClient.Builder();
+        this.api = new FixedApiClient();
+        this.hostname = Utils.getHost(podmanUri);
+
+        switch (podmanUri.getScheme().toLowerCase()) {
+            case "unix" -> {
+                httpClientBuilder.socketFactory(new UnixDomainSocketFactory(new File(podmanUri.getPath())));
+                this.api.setBasePath("http://localhost/v5.0.0");
+            }
+            case "http", "https", "tcp" -> {
+                this.api.setBasePath(podmanUri.toString());
+            }
+            default -> throw new PodmanException("Wrong schema");
+        }
+        this.api.setHttpClient(httpClientBuilder.build());
+
+        this.yamlPath = yamlPath;
+    }
+
+    /**
+     * Creates player with specified path for k8s YAML specification. The socket path is autodetected via {@code PODMAN_HOST} environment
      * variable.
      *
      * @param yamlPath path to k8s YAML specification.
      * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
      */
     public KubePlayer(String yamlPath) throws PodmanException {
-        this(System.getenv(Constants.ENV_PODMAN_SOCKET), yamlPath);
-    }
-
-    /**
-     * Creates player with specified paths for socket file and k8s YAML specification. The socket path is autodetected via
-     * {@code PODMAN_SOCKET} environment variable.
-     *
-     * @param socketPath path to socket file.
-     * @param yamlPath   path to k8s YAML specification.
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
-     */
-    public KubePlayer(String socketPath, String yamlPath) throws PodmanException {
-        if (socketPath == null || socketPath.isEmpty()) {
-            throw new PodmanException("Environment variable " + Constants.ENV_PODMAN_SOCKET + " is not set");
-        }
-
-        var httpClient = new OkHttpClient.Builder()
-                .socketFactory(new UnixDomainSocketFactory(new File(socketPath)))
-                .build();
-        this.api = new FixedApiClient()
-                .setHttpClient(httpClient)
-                .setBasePath("http://localhost/v5.0.0");
-
-        this.yamlPath = yamlPath;
-
-        final SystemApi systemApi = new SystemApi(this.api);
-
-        LibpodInfo libpodInfo = null;
-        try {
-            libpodInfo = systemApi.systemInfoLibpod().execute();
-        } catch (ApiException ex) {
-            throw new PodmanException("Doesn't initialized", ex);
-        }
-        this.hostname = libpodInfo.getHost().getHostname();
+        this(Utils.getPodmanUri(), yamlPath);
     }
 
     @Override

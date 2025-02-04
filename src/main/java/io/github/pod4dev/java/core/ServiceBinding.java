@@ -1,6 +1,7 @@
-package io.github.pod4dev.java;
+package io.github.pod4dev.java.core;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Service binging.
@@ -26,7 +27,8 @@ public class ServiceBinding {
     /**
      * Mapped port.
      */
-    private final Integer mappedPort;
+    @Setter
+    private Integer mappedPort;
 
     /**
      * Creates port binding.
@@ -44,5 +46,9 @@ public class ServiceBinding {
         this.mappedHost = mappedHost;
         this.exposedPort = exposedPort;
         this.mappedPort = mappedPort;
+    }
+
+    public ServiceBinding(String serviceName, String mappedHost, Integer exposedPort) {
+        this(serviceName, mappedHost, exposedPort, null);
     }
 }

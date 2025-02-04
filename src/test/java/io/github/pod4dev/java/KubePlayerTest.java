@@ -1,5 +1,7 @@
 package io.github.pod4dev.java;
 
+import io.github.pod4dev.java.service.KubePlayer;
+import io.github.pod4dev.libpodj.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,26 +20,30 @@ class KubePlayerTest {
 
     static {
         ENVIRONMENT
-                .withExposedService("test-1", 80)
-                .withExposedService("test-2", 81)
+                .withExposedService("pod4dev-java-1", 80)
+                .withExposedService("pod4dev-java-1", 81)
+                .withExposedService("pod4dev-java-2", 2000)
                 .start();
     }
 
     @Test
-    void startStop() throws IOException {
+    void startStop() throws IOException, ApiException {
         /*------ Arranges ------*/
         var client = new OkHttpClient.Builder().build();
 
         /*------ Actions ------*/
 
-        var mappedPort1 = ENVIRONMENT.getMappedPort("test-1", 80);
-        var mappedHost1 = ENVIRONMENT.getMappedHost("test-1", 80);
-        var mappedPort2 = ENVIRONMENT.getMappedPort("test-2", 81);
-        var mappedHost2 = ENVIRONMENT.getMappedHost("test-2", 81);
+        var mappedPort1 = ENVIRONMENT.getMappedPort("pod4dev-java-1", 80);
+        var mappedHost1 = ENVIRONMENT.getMappedHost();
+        var mappedPort2 = ENVIRONMENT.getMappedPort("pod4dev-java-1", 81);
+        var mappedHost2 = ENVIRONMENT.getMappedHost();
+        var mappedPort3 = ENVIRONMENT.getMappedPort("pod4dev-java-2", 2000);
+        var mappedHost3 = ENVIRONMENT.getMappedHost();
 
         String logTemplate = "Mapped: %s:%d";
         log.info(logTemplate.formatted(mappedHost1, mappedPort1));
         log.info(logTemplate.formatted(mappedHost2, mappedPort2));
+        log.info(logTemplate.formatted(mappedHost3, mappedPort3));
 
         var result1 = client
                 .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost1, mappedPort1)).build())
@@ -45,11 +51,16 @@ class KubePlayerTest {
         var result2 = client
                 .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost2, mappedPort2)).build())
                 .execute();
+        var result3 = client
+                .newCall(new Request.Builder().url("http://%s:%d".formatted(mappedHost3, mappedPort3)).build())
+                .execute();
 
         /*------ Asserts ------*/
         Assertions.assertNotEquals(80, mappedPort1);
         Assertions.assertNotEquals(81, mappedPort2);
+        Assertions.assertNotEquals(2000, mappedPort3);
         Assertions.assertTrue(result1.isSuccessful());
         Assertions.assertTrue(result2.isSuccessful());
+        Assertions.assertTrue(result3.isSuccessful());
     }
 }

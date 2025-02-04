@@ -1,4 +1,4 @@
-package io.github.pod4dev.java;
+package io.github.pod4dev.java.core;
 
 import lombok.experimental.UtilityClass;
 

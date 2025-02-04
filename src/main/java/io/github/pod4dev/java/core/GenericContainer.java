@@ -1,9 +1,30 @@
-package io.github.pod4dev.java;
+package io.github.pod4dev.java.core;
 
 import io.github.pod4dev.java.exceptions.PodmanException;
+import io.github.pod4dev.java.podman.PodmanClient;
+import io.github.pod4dev.libpodj.ApiException;
+import io.github.pod4dev.libpodj.api.SystemApi;
+import io.github.pod4dev.libpodj.model.HostInfo;
+import io.github.pod4dev.libpodj.model.LibpodInfo;
+
+import java.util.Optional;
 
 
 public interface GenericContainer extends AutoCloseable {
+
+    /**
+     * Check if service is running.
+     *
+     * @return check result.
+     */
+    boolean isRunning();
+
+    /**
+     * Get API client.
+     *
+     * @return API client.
+     */
+    PodmanClient getClient();
 
     /**
      * Creates the pod or container and immediately starts it. All created resources will be cleared
@@ -24,7 +45,7 @@ public interface GenericContainer extends AutoCloseable {
      * @return container with exposed services.
      */
     GenericContainer withExposedService(final String serviceName,
-                                        final int exposedPort) throws PodmanException;
+                                        final Integer exposedPort) throws PodmanException;
 
     /**
      * Do resources cleanup after stopping.
@@ -43,13 +64,22 @@ public interface GenericContainer extends AutoCloseable {
     GenericContainer withRemoveVolumes(boolean doRemoveVolumes);
 
     /**
-     * Getting mapped host for the given service's name and exposed port.
+     * Getting mapped host
      *
-     * @param serviceName the service name.
-     * @param exposedPort the exposed port.
      * @return mapped host.
      */
-    String getMappedHost(final String serviceName, final int exposedPort) throws PodmanException;
+    default String getMappedHost() throws PodmanException {
+        final SystemApi systemApi = new SystemApi(this.getClient());
+
+        LibpodInfo libpodInfo = null;
+        try {
+            libpodInfo = systemApi.systemInfoLibpod().execute();
+        } catch (ApiException e) {
+            throw new PodmanException(e);
+        }
+
+        return Optional.ofNullable(libpodInfo.getHost()).map(HostInfo::getHostname).orElse(null);
+    }
 
     /**
      * Getting mapped port for the given service's name and exposed port.
@@ -58,7 +88,7 @@ public interface GenericContainer extends AutoCloseable {
      * @param exposedPort the exposed port.
      * @return mapped host.
      */
-    int getMappedPort(final String serviceName, final int exposedPort) throws PodmanException;
+    Integer getMappedPort(final String serviceName, final Integer exposedPort) throws PodmanException;
 
     @Override
     default void close() throws Exception {

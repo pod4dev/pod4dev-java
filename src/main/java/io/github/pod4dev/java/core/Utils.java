@@ -1,4 +1,4 @@
-package io.github.pod4dev.java;
+package io.github.pod4dev.java.core;
 
 import io.github.pod4dev.java.exceptions.PodmanException;
 import lombok.experimental.UtilityClass;
@@ -17,25 +17,29 @@ import java.util.Random;
 @UtilityClass
 public final class Utils {
 
-    public static String readYaml(String yamlPath) throws IOException {
-        List<Path> files = Files.isDirectory(Path.of(yamlPath))
-                ? Files.list(Path.of(yamlPath)).toList()
-                : List.of(Path.of(yamlPath));
+    public static String readYaml(String yamlPath) throws PodmanException {
+        try {
+            List<Path> files = Files.isDirectory(Path.of(yamlPath))
+                    ? Files.list(Path.of(yamlPath)).toList()
+                    : List.of(Path.of(yamlPath));
 
-        StringBuilder resultStringBuilder = new StringBuilder();
-        for (Path file : files) {
-            if (file.getFileName().toString().endsWith(".yaml") || file.getFileName().toString().endsWith(".yml")) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file.toFile())))) {
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        resultStringBuilder.append(line).append(System.lineSeparator());
+            StringBuilder resultStringBuilder = new StringBuilder();
+            for (Path file : files) {
+                if (file.getFileName().toString().endsWith(".yaml") || file.getFileName().toString().endsWith(".yml")) {
+                    try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file.toFile())))) {
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            resultStringBuilder.append(line).append(System.lineSeparator());
+                        }
+                        resultStringBuilder.append("---").append(System.lineSeparator());
                     }
-                    resultStringBuilder.append("---").append(System.lineSeparator());
                 }
             }
-        }
 
-        return resultStringBuilder.toString();
+            return resultStringBuilder.toString();
+        } catch (IOException ex) {
+            throw new PodmanException(ex);
+        }
     }
 
     public static int findFreePort(List<Integer> binded) throws PodmanException {

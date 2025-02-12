@@ -13,7 +13,7 @@ Order to read the environment variables:
 
 An example you can see in tests:
 - [`test.yaml`][1]
-- [`KubePlayerTest`][2]
+- [`KubePlayerTest.java`][2]
 
 [1]: src/test/resources/test.yaml
 [2]: src/test/java/io/github/pod4dev/java/KubePlayerTest.java

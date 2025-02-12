@@ -14,16 +14,13 @@ import java.nio.file.Paths;
 @Slf4j
 class KubePlayerTest {
 
-    protected static final KubePlayer ENVIRONMENT = new KubePlayer(
-            Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString()
-    );
+    protected static final KubePlayer ENVIRONMENT = new KubePlayer(Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString())
+            .withExposedService("pod4dev-java-1", 80)
+            .withExposedService("pod4dev-java-1", 81)
+            .withExposedService("pod4dev-java-2", 2000);
 
     static {
-        ENVIRONMENT
-                .withExposedService("pod4dev-java-1", 80)
-                .withExposedService("pod4dev-java-1", 81)
-                .withExposedService("pod4dev-java-2", 2000)
-                .start();
+        ENVIRONMENT.start();
     }
 
     @Test

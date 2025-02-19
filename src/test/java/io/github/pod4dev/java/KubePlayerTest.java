@@ -1,6 +1,6 @@
 package io.github.pod4dev.java;
 
-import io.github.pod4dev.java.service.KubePlayer;
+import io.github.pod4dev.java.service.impl.KubePlayer;
 import io.github.pod4dev.libpodj.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;

@@ -3,7 +3,7 @@ package io.github.pod4dev.java.service;
 import io.github.pod4dev.java.exceptions.PodmanException;
 
 
-public interface KubePlayer extends GenericService {
+public interface PodK8s extends GenericService {
 
     /**
      * Specify service and its port for expose.
@@ -12,8 +12,8 @@ public interface KubePlayer extends GenericService {
      * @param exposedPort port to expose.
      * @return container with exposed services.
      */
-    KubePlayer withExposedService(final String serviceName,
-                                  final Integer exposedPort) throws PodmanException;
+    PodK8s withExposedService(final String serviceName,
+                              final Integer exposedPort) throws PodmanException;
 
 
     /**

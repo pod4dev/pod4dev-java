@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Work with /kube/play API.
  */
 @Slf4j
-public class KubePlayer implements io.github.pod4dev.java.service.KubePlayer {
+public class PodK8s implements io.github.pod4dev.java.service.PodK8s {
 
     private final PodmanClient client;
     private final String yamlPath;
@@ -45,7 +45,7 @@ public class KubePlayer implements io.github.pod4dev.java.service.KubePlayer {
      * @param yamlPath  path to k8s YAML specification.
      * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
      */
-    private KubePlayer(URI podmanUri, String yamlPath) throws PodmanException {
+    private PodK8s(URI podmanUri, String yamlPath) throws PodmanException {
         this.yamlPath = yamlPath;
         this.client = new PodmanClient(podmanUri);
     }
@@ -57,7 +57,7 @@ public class KubePlayer implements io.github.pod4dev.java.service.KubePlayer {
      * @param yamlPath path to k8s YAML specification.
      * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
      */
-    public KubePlayer(String yamlPath) throws PodmanException {
+    public PodK8s(String yamlPath) throws PodmanException {
         this(Utils.getPodmanUri(), yamlPath);
     }
 
@@ -72,7 +72,7 @@ public class KubePlayer implements io.github.pod4dev.java.service.KubePlayer {
     }
 
     @Override
-    public KubePlayer withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
+    public PodK8s withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
 
         final Predicate<ServiceBinding> isBindingExist = serviceBinding -> Objects.equals(serviceBinding.getServiceName(), serviceName)
                 && Objects.equals(serviceBinding.getExposedPort(), exposedPort);
@@ -87,13 +87,13 @@ public class KubePlayer implements io.github.pod4dev.java.service.KubePlayer {
     }
 
     @Override
-    public KubePlayer withCleanup(boolean doCleanup) {
+    public PodK8s withCleanup(boolean doCleanup) {
         this.doCleanup = doCleanup;
         return this;
     }
 
     @Override
-    public KubePlayer withRemoveVolumes(boolean doRemoveVolumes) {
+    public PodK8s withRemoveVolumes(boolean doRemoveVolumes) {
         this.doRemoveVolumes = doRemoveVolumes;
         return this;
     }

@@ -1,36 +1,9 @@
 package io.github.pod4dev.java.service;
 
-import io.github.pod4dev.java.core.Utils;
 import io.github.pod4dev.java.exceptions.PodmanException;
-import io.github.pod4dev.java.podman.PodmanClient;
 
 
-public interface KubePlayer extends AutoCloseable {
-
-    /**
-     * Check if service is running.
-     *
-     * @return check result.
-     */
-    boolean isRunning();
-
-    /**
-     * Get API client.
-     *
-     * @return API client.
-     */
-    PodmanClient getClient();
-
-    /**
-     * Creates the pod or container and immediately starts it. All created resources will be cleared
-     * out when a SIGTERM is received or pods exit.
-     */
-    void start() throws PodmanException;
-
-    /**
-     * Stops the pod or container with clearing created volumes.
-     */
-    void stop() throws PodmanException;
+public interface KubePlayer extends GenericService {
 
     /**
      * Specify service and its port for expose.
@@ -42,30 +15,6 @@ public interface KubePlayer extends AutoCloseable {
     KubePlayer withExposedService(final String serviceName,
                                   final Integer exposedPort) throws PodmanException;
 
-    /**
-     * Do resources cleanup after stopping.
-     *
-     * @param doCleanup default is true.
-     * @return customised container.
-     */
-    KubePlayer withCleanup(boolean doCleanup);
-
-    /**
-     * Do volumes cleanup after stopping.
-     *
-     * @param doRemoveVolumes default is true.
-     * @return customised container.
-     */
-    KubePlayer withRemoveVolumes(boolean doRemoveVolumes);
-
-    /**
-     * Getting mapped host
-     *
-     * @return mapped host.
-     */
-    default String getMappedHost() throws PodmanException {
-        return Utils.getHost(getClient().podmanURI());
-    }
 
     /**
      * Getting mapped port for the given service's name and exposed port.
@@ -75,9 +24,4 @@ public interface KubePlayer extends AutoCloseable {
      * @return mapped host.
      */
     Integer getMappedPort(final String serviceName, final Integer exposedPort) throws PodmanException;
-
-    @Override
-    default void close() throws Exception {
-        this.stop();
-    }
 }

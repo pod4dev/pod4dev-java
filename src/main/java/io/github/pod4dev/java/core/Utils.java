@@ -9,17 +9,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+
 
 @UtilityClass
 public final class Utils {
 
     public static String readYaml(String yamlPath) throws PodmanException {
         try {
-            List<Path> files = Files.isDirectory(Path.of(yamlPath))
-                    ? Files.list(Path.of(yamlPath)).toList()
-                    : List.of(Path.of(yamlPath));
+            List<Path> files = getFiles(yamlPath);
 
             StringBuilder resultStringBuilder = new StringBuilder();
             for (Path file : files) {
@@ -38,6 +39,16 @@ public final class Utils {
         } catch (IOException ex) {
             throw new PodmanException(ex);
         }
+    }
+
+    private static List<Path> getFiles(String yamlPath) throws IOException {
+        List<Path> files = new ArrayList<>();
+        try (var dir = Files.list(Path.of(yamlPath))) {
+            files.addAll(dir.toList());
+        } catch (NotDirectoryException ex) {
+            files.addAll(List.of(Path.of(yamlPath)));
+        }
+        return files;
     }
 
     public static URI getPodmanUri() {

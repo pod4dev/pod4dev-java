@@ -30,7 +30,7 @@ public interface GenericService extends AutoCloseable {
      * @param doCleanup default is true.
      * @return customised container.
      */
-    PodK8s withCleanup(boolean doCleanup);
+    Player withCleanup(boolean doCleanup);
 
     /**
      * Do volumes cleanup after stopping.
@@ -38,7 +38,7 @@ public interface GenericService extends AutoCloseable {
      * @param doRemoveVolumes default is true.
      * @return customised container.
      */
-    PodK8s withRemoveVolumes(boolean doRemoveVolumes);
+    Player withRemoveVolumes(boolean doRemoveVolumes);
 
     /**
      * Getting mapped host

@@ -3,7 +3,7 @@ package io.github.pod4dev.java.service;
 import io.github.pod4dev.java.exceptions.PodmanException;
 
 
-public interface PodK8s extends GenericService {
+public interface Player extends GenericService {
 
     /**
      * Specify service and its port for expose.
@@ -12,7 +12,7 @@ public interface PodK8s extends GenericService {
      * @param exposedPort port to expose.
      * @return container with exposed services.
      */
-    PodK8s withExposedService(final String serviceName,
+    Player withExposedService(final String serviceName,
                               final Integer exposedPort) throws PodmanException;
 
 

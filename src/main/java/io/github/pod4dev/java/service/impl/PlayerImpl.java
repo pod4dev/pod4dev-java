@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Work with /kube/play API.
  */
 @Slf4j
-public class PodK8s implements io.github.pod4dev.java.service.PodK8s {
+public class PlayerImpl implements io.github.pod4dev.java.service.Player {
 
     private final PodmanClient client;
     private final String yamlPath;
@@ -38,26 +38,13 @@ public class PodK8s implements io.github.pod4dev.java.service.PodK8s {
     private boolean doCleanup = true;
     private boolean doRemoveVolumes = true;
 
-    /**
-     * Creates player with specified paths for socket file and k8s YAML specification.
-     *
-     * @param podmanUri host address.
-     * @param yamlPath  path to k8s YAML specification.
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
-     */
-    private PodK8s(URI podmanUri, String yamlPath) throws PodmanException {
+
+    public PlayerImpl(URI podmanUri, String yamlPath) throws PodmanException {
         this.yamlPath = yamlPath;
         this.client = new PodmanClient(podmanUri);
     }
 
-    /**
-     * Creates player with specified path for k8s YAML specification. The socket path is autodetected via {@code PODMAN_HOST} environment
-     * variable.
-     *
-     * @param yamlPath path to k8s YAML specification.
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
-     */
-    public PodK8s(String yamlPath) throws PodmanException {
+    public PlayerImpl(String yamlPath) throws PodmanException {
         this(Utils.getPodmanUri(), yamlPath);
     }
 
@@ -72,7 +59,7 @@ public class PodK8s implements io.github.pod4dev.java.service.PodK8s {
     }
 
     @Override
-    public PodK8s withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
+    public PlayerImpl withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
 
         final Predicate<ServiceBinding> isBindingExist = serviceBinding -> Objects.equals(serviceBinding.getServiceName(), serviceName)
                 && Objects.equals(serviceBinding.getExposedPort(), exposedPort);
@@ -87,13 +74,13 @@ public class PodK8s implements io.github.pod4dev.java.service.PodK8s {
     }
 
     @Override
-    public PodK8s withCleanup(boolean doCleanup) {
+    public PlayerImpl withCleanup(boolean doCleanup) {
         this.doCleanup = doCleanup;
         return this;
     }
 
     @Override
-    public PodK8s withRemoveVolumes(boolean doRemoveVolumes) {
+    public PlayerImpl withRemoveVolumes(boolean doRemoveVolumes) {
         this.doRemoveVolumes = doRemoveVolumes;
         return this;
     }

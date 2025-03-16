@@ -7,21 +7,20 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+
 
 @UtilityClass
 public final class Utils {
 
     public static String readYaml(String yamlPath) throws PodmanException {
         try {
-            List<Path> files = Files.isDirectory(Path.of(yamlPath))
-                    ? Files.list(Path.of(yamlPath)).toList()
-                    : List.of(Path.of(yamlPath));
+            List<Path> files = getFiles(yamlPath);
 
             StringBuilder resultStringBuilder = new StringBuilder();
             for (Path file : files) {
@@ -42,32 +41,14 @@ public final class Utils {
         }
     }
 
-    public static int findFreePort(List<Integer> binded) throws PodmanException {
-        Integer result = null;
-        final Random randomizer = new Random();
-        final int min = 30000;
-        final int max = 50000;
-        int counter = max - min;
-        while (result == null && counter > 0) {
-            int port = randomizer.nextInt(min, max);
-            if (binded.contains(port)) {
-                counter--;
-                continue;
-            }
-            try (ServerSocket serverSocket = new ServerSocket(port)) {
-                if (serverSocket.getLocalPort() == port) {
-                    result = port;
-                    break;
-                }
-            } catch (IOException ignored) {
-                counter--;
-                continue;
-            }
+    private static List<Path> getFiles(String yamlPath) throws IOException {
+        List<Path> files = new ArrayList<>();
+        try (var dir = Files.list(Path.of(yamlPath))) {
+            files.addAll(dir.toList());
+        } catch (NotDirectoryException ex) {
+            files.addAll(List.of(Path.of(yamlPath)));
         }
-        if (result == null) {
-            throw new PodmanException("There is no free port");
-        }
-        return result;
+        return files;
     }
 
     public static URI getPodmanUri() {
@@ -79,10 +60,6 @@ public final class Utils {
             throw new PodmanException("No environment variable defined");
         }
         return URI.create(podmanUri);
-    }
-
-    public static String getUnixDomainSocket(URI podmanUri) {
-        return "unix".toLowerCase().equals(podmanUri.getScheme()) ? podmanUri.getPath() : null;
     }
 
     public static String getHost(URI podmanUri) {

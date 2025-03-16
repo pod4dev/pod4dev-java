@@ -15,14 +15,10 @@ import java.nio.charset.StandardCharsets;
 
 public class PodmanClient extends ApiClient {
 
-    public PodmanClient() {
-    }
-
-    public PodmanClient(OkHttpClient client) {
-        super(client);
-    }
+    private final URI podmanURI;
 
     public PodmanClient(URI podmanUri) {
+        this.podmanURI = podmanUri;
         var httpClientBuilder = new OkHttpClient.Builder();
         switch (podmanUri.getScheme().toLowerCase()) {
             case "unix" -> {
@@ -37,6 +33,9 @@ public class PodmanClient extends ApiClient {
         this.setHttpClient(httpClientBuilder.build());
     }
 
+    public URI podmanURI() {
+        return podmanURI;
+    }
 
     @Override
     public RequestBody serialize(Object obj, String contentType) throws ApiException {

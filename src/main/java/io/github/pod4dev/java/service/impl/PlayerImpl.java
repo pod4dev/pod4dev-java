@@ -1,6 +1,5 @@
-package io.github.pod4dev.java.service;
+package io.github.pod4dev.java.service.impl;
 
-import io.github.pod4dev.java.core.GenericContainer;
 import io.github.pod4dev.java.core.ServiceBinding;
 import io.github.pod4dev.java.core.Utils;
 import io.github.pod4dev.java.exceptions.PodmanException;
@@ -28,7 +27,7 @@ import java.util.stream.Collectors;
  * Work with /kube/play API.
  */
 @Slf4j
-public class KubePlayer implements GenericContainer {
+public class PlayerImpl implements io.github.pod4dev.java.service.Player {
 
     private final PodmanClient client;
     private final String yamlPath;
@@ -39,26 +38,13 @@ public class KubePlayer implements GenericContainer {
     private boolean doCleanup = true;
     private boolean doRemoveVolumes = true;
 
-    /**
-     * Creates player with specified paths for socket file and k8s YAML specification.
-     *
-     * @param podmanUri host address.
-     * @param yamlPath  path to k8s YAML specification.
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
-     */
-    private KubePlayer(URI podmanUri, String yamlPath) throws PodmanException {
+
+    public PlayerImpl(URI podmanUri, String yamlPath) throws PodmanException {
         this.yamlPath = yamlPath;
         this.client = new PodmanClient(podmanUri);
     }
 
-    /**
-     * Creates player with specified path for k8s YAML specification. The socket path is autodetected via {@code PODMAN_HOST} environment
-     * variable.
-     *
-     * @param yamlPath path to k8s YAML specification.
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
-     */
-    public KubePlayer(String yamlPath) throws PodmanException {
+    public PlayerImpl(String yamlPath) throws PodmanException {
         this(Utils.getPodmanUri(), yamlPath);
     }
 
@@ -73,7 +59,7 @@ public class KubePlayer implements GenericContainer {
     }
 
     @Override
-    public KubePlayer withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
+    public PlayerImpl withExposedService(final String serviceName, final Integer exposedPort) throws PodmanException {
 
         final Predicate<ServiceBinding> isBindingExist = serviceBinding -> Objects.equals(serviceBinding.getServiceName(), serviceName)
                 && Objects.equals(serviceBinding.getExposedPort(), exposedPort);
@@ -88,13 +74,13 @@ public class KubePlayer implements GenericContainer {
     }
 
     @Override
-    public KubePlayer withCleanup(boolean doCleanup) {
+    public PlayerImpl withCleanup(boolean doCleanup) {
         this.doCleanup = doCleanup;
         return this;
     }
 
     @Override
-    public KubePlayer withRemoveVolumes(boolean doRemoveVolumes) {
+    public PlayerImpl withRemoveVolumes(boolean doRemoveVolumes) {
         this.doRemoveVolumes = doRemoveVolumes;
         return this;
     }

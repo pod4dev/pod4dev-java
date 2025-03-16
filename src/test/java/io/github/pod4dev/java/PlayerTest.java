@@ -1,6 +1,7 @@
 package io.github.pod4dev.java;
 
-import io.github.pod4dev.java.service.KubePlayer;
+import io.github.pod4dev.java.service.Initializer;
+import io.github.pod4dev.java.service.Player;
 import io.github.pod4dev.libpodj.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -11,19 +12,18 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-@Slf4j
-class KubePlayerTest {
 
-    protected static final KubePlayer ENVIRONMENT = new KubePlayer(
-            Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString()
-    );
+@Slf4j
+class PlayerTest {
+
+    protected static final Player ENVIRONMENT = Initializer
+            .createPodK8s(Paths.get("src/test/resources/test.yaml").toAbsolutePath().toString())
+            .withExposedService("pod4dev-java-1", 80)
+            .withExposedService("pod4dev-java-1", 81)
+            .withExposedService("pod4dev-java-2", 2000);
 
     static {
-        ENVIRONMENT
-                .withExposedService("pod4dev-java-1", 80)
-                .withExposedService("pod4dev-java-1", 81)
-                .withExposedService("pod4dev-java-2", 2000)
-                .start();
+        ENVIRONMENT.start();
     }
 
     @Test

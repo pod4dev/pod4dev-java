@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.pod4dev:libpod-java:5.4.1")
+    implementation("io.github.pod4dev:libpod-java:5.5.2")
     implementation("com.squareup.okhttp3.sample:unixdomainsockets:3.14.9")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.slf4j:slf4j-simple:2.0.16")
@@ -23,7 +23,7 @@ dependencies {
 }
 
 group = "io.github.pod4dev"
-version = "0.4.1"
+version = "0.5.2"
 
 java {
     withJavadocJar()

@@ -16,7 +16,7 @@ public class Initializer {
      * @param podmanUri host address.
      * @param yamlPath path to k8s YAML specification.
      * 
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
+     * @throws PodmanException if yamlPath is empty or error during initialization is happened.
      */
     public static Player createPodK8s(URI podmanUri, String yamlPath) throws PodmanException {
         return new PlayerImpl(podmanUri, yamlPath);
@@ -28,7 +28,7 @@ public class Initializer {
      *
      * @param yamlPath path to k8s YAML specification.
      * 
-     * @throws PodmanException if {@link #yamlPath} is empty or error during initialization is happened.
+     * @throws PodmanException if yamlPath is empty or error during initialization is happened.
      */
     public static Player createPodK8s(String yamlPath) throws PodmanException {
         return new PlayerImpl(yamlPath);
